@@ -9,7 +9,7 @@ No ill-conditioned fixed-point iteration is required.
 import mpmath as mp
 
 def main():
-    mp.dps = 100
+    mp.mp.dps = 100  # FIXED: mp.dps -> mp.mp.dps
 
     # ============================================================
     # Fundamental constants
@@ -17,9 +17,9 @@ def main():
     pi = mp.pi
     e = mp.e
     tau = mp.log(pi / e)
-    gamma_val = 196 * tau / (49 + tau)          # Euler constant from torsion
-    alpha0 = (pi - e)**2 / (pi**2 * mp.sqrt(2*pi))  # tree-level fine-structure
-    eps0 = mp.mpf(1) / (28**2)                  # regularization parameter
+    gamma_val = 196 * tau / (49 + tau)
+    alpha0 = (pi - e)**2 / (pi**2 * mp.sqrt(2*pi))
+    eps0 = mp.mpf(1) / (28**2)
 
     # ============================================================
     # Known self-consistent alpha from high-precision computation
@@ -31,15 +31,15 @@ def main():
     # ============================================================
     def capacities(a):
         return [
-            mp.mpf(1),                        # A
-            a ** (-mp.mpf('0.5')),            # M
-            a ** (-mp.mpf('0.25')),           # I
-            a ** (-mp.mpf('0.25')),           # D
-            a ** (-mp.mpf('0.5')),            # S (= M)
-            a ** (-mp.mpf(1) / 3),            # P
-            mp.sqrt(2),                       # B
-            mp.mpf(1),                        # H
-            mp.mpf(1)                         # C
+            mp.mpf(1),
+            a ** (-mp.mpf('0.5')),
+            a ** (-mp.mpf('0.25')),
+            a ** (-mp.mpf('0.25')),
+            a ** (-mp.mpf('0.5')),
+            a ** (-mp.mpf(1) / 3),
+            mp.sqrt(2),
+            mp.mpf(1),
+            mp.mpf(1)
         ]
 
     # ============================================================
@@ -62,7 +62,6 @@ def main():
         for i, j, g in edges:
             ratio = C[j] / C[i]
             val = mp.e ** (1j * g * mp.log(ratio))
-            # Apply attenuation ONLY when there is actual action flow
             if g != 0 and abs(mp.log(ratio)) > mp.mpf('1e-30'):
                 val *= mp.exp(-eps0)
             T[i, j] = val
