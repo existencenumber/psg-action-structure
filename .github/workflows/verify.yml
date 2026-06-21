@@ -1,0 +1,53 @@
+name: Verify Physical Constants
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run core computation
+      run: |
+        python examples/compute_all_constants.py > output.txt
+        cat output.txt
+
+    - name: Verify fine-structure constant
+      run: grep -q "alpha^(-1)        = 137.035999084" output.txt
+      # 如果找不到这行，grep 会返回非零退出码，工作流失败
+
+    - name: Verify strong coupling
+      run: grep -q "alpha_s(MZ)       = 0.11794" output.txt
+
+    - name: Verify Weinberg angle
+      run: grep -q "sin^2(theta_W)   = 0.23122" output.txt
+
+    - name: Verify muon-electron mass ratio
+      run: grep -q "m_mu / m_e       = 206.76828" output.txt
+
+    - name: Verify spectral index
+      run: grep -q "n_s              = 0.965" output.txt
+
+    - name: Verify tensor-to-scalar ratio
+      run: grep -q "r                = 0.00497" output.txt
+
+    - name: Run precision test
+      run: python tests/test_precision.py
+
+    - name: Run comparison script
+      run: python examples/compare_with_experiment.py
