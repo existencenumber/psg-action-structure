@@ -9,7 +9,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import mpmath as mp
-mp.dps = 100
+mp.mp.dps = 100
 
 from src.physics_constants import compute_all
 
