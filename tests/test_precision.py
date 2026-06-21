@@ -12,7 +12,7 @@ import mpmath as mp
 
 if __name__ == '__main__':
     for dps in [50, 100, 200]:
-        mp.dps = dps
+        mp.mp.dps = dps
         from src.physics_constants import compute_all
         results = compute_all(verbose=False)
         print(f"dps={dps}: alpha^(-1) = {float(1/results['alpha']):.12f}")
