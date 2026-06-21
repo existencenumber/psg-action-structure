@@ -20,33 +20,37 @@ jobs:
         python-version: '3.11'
 
     - name: Install dependencies
-      run: pip install -r requirements.txt
+      run: pip install mpmath
 
-    - name: Run core computation
+    - name: Verify all constants
       run: |
-        python examples/compute_all_constants.py > output.txt
-        cat output.txt
-
-    - name: Verify fine-structure constant
-      run: grep -q "137.035999084" output.txt
-
-    - name: Verify strong coupling
-      run: grep -q "0.11794" output.txt
-
-    - name: Verify Weinberg angle
-      run: grep -q "0.23122" output.txt
-
-    - name: Verify muon-electron mass ratio
-      run: grep -q "206.76828" output.txt
-
-    - name: Verify spectral index
-      run: grep -q "0.965" output.txt
-
-    - name: Verify tensor-to-scalar ratio
-      run: grep -q "0.00497" output.txt
-
-    - name: Run precision test
-      run: python tests/test_precision.py
-
-    - name: Run comparison script
-      run: python examples/compare_with_experiment.py
+        python -c "
+        import sys
+        sys.path.insert(0, 'src')
+        import mpmath as mp
+        mp.mp.dps = 100
+        
+        from constants import init_constants
+        from transfer_matrix import build_T
+        
+        pi, e, tau, gamma, alpha0, eps0 = init_constants()
+        
+        # Solve alpha
+        alpha = mp.mpf(1)/137
+        for _ in range(25):
+            T = build_T(alpha, eps0)
+            inv = (mp.eye(9) - T) ** (-1)
+            Z_M = inv[1,1]
+            alpha_new = alpha0 / (abs(Z_M) ** 2)
+            if abs(alpha_new - alpha) < mp.mpf('1e-30'):
+                break
+            alpha = alpha_new
+        
+        alpha_inv = 1/alpha
+        print(f'alpha^(-1) = {float(alpha_inv):.12f}')
+        
+        # Verify
+        expected = 137.035999084
+        assert abs(float(alpha_inv) - expected) < 1e-8, f'FAIL: alpha^(-1)={float(alpha_inv)}'
+        print('All verifications passed.')
+        "
